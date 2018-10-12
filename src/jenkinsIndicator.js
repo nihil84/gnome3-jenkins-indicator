@@ -125,30 +125,40 @@ const JenkinsIndicator = new Lang.Class({
 		// filter jobs to be shown
 		let displayJobs = Utils.filterJobs(this.jobs, this.settings);
 
-		// update popup menu
-		this.menu.updateJobs(displayJobs);
+        if (displayJobs.length == 0) {
+            this.showMessage("No jobs found", {style_class: 'warning'});
+            
+            if (!this.settings.show_successful_jobs) {
+                // assuming we filtered out "successful" jobs
+                this._iconActor.icon_name = Utils.jobStates.getIcon("blue", this.settings.green_balls_plugin);
+            }
+            return;
+        }
 
-		// update overall indicator icon
+        // update popup menu
+        this.menu.updateJobs(displayJobs);
+    
+        // update overall indicator icon
 
-		// default state of overall indicator
-		let overallState = Utils.jobStates.getDefaultState();
+        // default state of overall indicator
+        let overallState = Utils.jobStates.getDefaultState();
 
-		// set state to red if there are no jobs
-		if( displayJobs.length<=0 ) {
-			overallState = Utils.jobStates.getErrorState();
-		}
-		else {
-			// determine jobs overall state for the indicator
-			for( let i=0 ; i<displayJobs.length ; ++i )	{
-				// set overall job state to highest ranked (most important) state
-				if( Utils.jobStates.getRank(displayJobs[i].color)>-1 && Utils.jobStates.getRank(displayJobs[i].color)<Utils.jobStates.getRank(overallState) ) {
-					overallState = displayJobs[i].color;
-				}
-			}
-		}
+        // set state to red if there are no jobs
+        if( displayJobs.length<=0 ) {
+            overallState = Utils.jobStates.getErrorState();
+        }
+        else {
+            // determine jobs overall state for the indicator
+            for( let i=0 ; i<displayJobs.length ; ++i )	{
+                // set overall job state to highest ranked (most important) state
+                if( Utils.jobStates.getRank(displayJobs[i].color)>-1 && Utils.jobStates.getRank(displayJobs[i].color)<Utils.jobStates.getRank(overallState) ) {
+                    overallState = displayJobs[i].color;
+                }
+            }
+        }
 
-		// set new overall indicator icon representing current jenkins state
-		this._iconActor.icon_name = Utils.jobStates.getIcon(overallState, this.settings.green_balls_plugin);
+        // set new overall indicator icon representing current jenkins state
+        this._iconActor.icon_name = Utils.jobStates.getIcon(overallState, this.settings.green_balls_plugin);
 	},
 
 	// update settings
@@ -170,15 +180,19 @@ const JenkinsIndicator = new Lang.Class({
 		// set default error message if none provided
 		text = text || "unknown error";
 
+        this.showMessage(_("Error") + ": " + text, {style_class: 'error'});
+        
+		// set indicator state to error
+		this._iconActor.icon_name = Utils.jobStates.getIcon(Utils.jobStates.getErrorState(), this.settings.green_balls_plugin);
+	},
+    
+    showMessage: function(text, style) {
 		// remove all job menu entries and previous error messages
 		this.menu.jobSection.removeAll();
 
 		// show error message in popup menu
-		this.menu.jobSection.addMenuItem( new PopupMenu.PopupMenuItem(_("Error") + ": " + text, {style_class: 'error'}) );
-
-		// set indicator state to error
-		this._iconActor.icon_name = Utils.jobStates.getIcon(Utils.jobStates.getErrorState(), this.settings.green_balls_plugin);
-	},
+		this.menu.jobSection.addMenuItem( new PopupMenu.PopupMenuItem(text, style) );
+    },
 
 	// destroys the indicator
 	destroy: function() {

@@ -32,3 +32,8 @@
 	color: #ff0000;
 	font-weight: bold;
 }
+
+.warning {
+    color: #ffff00;
+    font-weight: bold;
+}
