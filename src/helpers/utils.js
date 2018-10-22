@@ -91,7 +91,7 @@ function jobMatches(job, patterns) {
 		// early exit check
 		if (!passedFilters) {
 			// breaking loop early, since no need to do pattern matching further
-			log_info('Not matching job ' + job.name + ' further');
+			//log_info('Not matching job ' + job.name + ' further');
 			return;
 		}
 		var positiveSearch = pattern.indexOf("!") !== 0;
@@ -104,12 +104,12 @@ function jobMatches(job, patterns) {
 		if (positiveSearch) {
 			passedFilters = passedFilters && matchingPattern;
 			if (passedFilters) {
-				log_info('Positive match for job ' + job.name + ' for pattern [' + pattern + ']');
+				//log_info('Positive match for job ' + job.name + ' for pattern [' + pattern + ']');
 			}
 		} else {
 			passedFilters = passedFilters && !matchingPattern;
 			if (passedFilters) {
-				log_info('Negative match for job ' + job.name + ' for pattern [' + pattern + ']');
+				//log_info('Negative match for job ' + job.name + ' for pattern [' + pattern + ']');
 			}
 		}
 	})

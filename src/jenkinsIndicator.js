@@ -86,7 +86,7 @@ const JenkinsIndicator = new Lang.Class({
 				this.httpSession.queue_message(request, Lang.bind(this, function(httpSession, message) {
 					// http error
 					if( message.status_code!==200 )	{
-						this.showError(_("Invalid Jenkins CI Server web frontend URL (HTTP Error %s)").format(message.status_code));
+						this.showError(_("(%s) Invalid Jenkins CI Server web frontend URL").format(message.status_code));
 					}
 					// http ok
 					else {
@@ -102,7 +102,7 @@ const JenkinsIndicator = new Lang.Class({
 						}
 						catch( e ) {
 							global.log(e)
-							this.showError(_("Invalid Jenkins CI Server web frontend URL"));
+							this.showError(_("Empty or invalid response from server"));
 						}
 					}
 
@@ -126,8 +126,8 @@ const JenkinsIndicator = new Lang.Class({
 		let displayJobs = Utils.filterJobs(this.jobs, this.settings);
 
         if (displayJobs.length == 0) {
-            this.showMessage("No jobs found", {style_class: 'warning'});
-            
+            this.menu.showMessage("No jobs found", {style_class: 'warning'});
+
             if (!this.settings.show_successful_jobs) {
                 // assuming we filtered out "successful" jobs
                 this._iconActor.icon_name = Utils.jobStates.getIcon("blue", this.settings.green_balls_plugin);
@@ -136,8 +136,11 @@ const JenkinsIndicator = new Lang.Class({
         }
 
         // update popup menu
-        this.menu.updateJobs(displayJobs);
-    
+				// remove all job menu entries and previous error messages
+				this.menu.clear();
+				this.menu.populate(displayJobs);
+				//this.menu.updateJobs(displayJobs);
+
         // update overall indicator icon
 
         // default state of overall indicator
@@ -180,19 +183,11 @@ const JenkinsIndicator = new Lang.Class({
 		// set default error message if none provided
 		text = text || "unknown error";
 
-        this.showMessage(_("Error") + ": " + text, {style_class: 'error'});
-        
+        this.menu.showMessage(_("Error") + ": " + text, {style_class: 'error'});
+
 		// set indicator state to error
 		this._iconActor.icon_name = Utils.jobStates.getIcon(Utils.jobStates.getErrorState(), this.settings.green_balls_plugin);
 	},
-    
-    showMessage: function(text, style) {
-		// remove all job menu entries and previous error messages
-		this.menu.jobSection.removeAll();
-
-		// show error message in popup menu
-		this.menu.jobSection.addMenuItem( new PopupMenu.PopupMenuItem(text, style) );
-    },
 
 	// destroys the indicator
 	destroy: function() {
